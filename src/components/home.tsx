@@ -1,23 +1,21 @@
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
+import { useNavigate } from "react-router-dom";
 import Navbar from "./layout/Navbar";
 import MusicPinGrid from "./music/MusicPinGrid";
 import MusicPlayer from "./music/MusicPlayer";
-import AuthModal from "./auth/AuthModal";
 import LandingPage from "./landing/LandingPage";
+import { useAuth } from "@/lib/auth";
 
 interface HomeProps {
-  isLoggedIn?: boolean;
-  username?: string;
   avatarUrl?: string;
 }
 
 const Home = ({
-  isLoggedIn = false,
-  username = "MusicLover",
   avatarUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed=music",
 }: HomeProps) => {
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState("discover");
   const [currentTrack, setCurrentTrack] = useState({
     id: "track-1",
@@ -29,13 +27,16 @@ const Home = ({
   });
   const [isPlaying, setIsPlaying] = useState(false);
 
+  const isLoggedIn = !!user;
+  const username = user?.email?.split("@")[0] || "User";
+
   const handleSearch = (query: string) => {
     console.log("Searching for:", query);
     // In a real implementation, this would trigger a search API call
   };
 
   const handleLoginClick = () => {
-    setIsAuthModalOpen(true);
+    navigate("/login");
   };
 
   const handleFilterChange = (filter: string) => {
@@ -53,10 +54,10 @@ const Home = ({
     return (
       <div className="min-h-screen bg-background">
         <Helmet>
-          <title>MusicPin | Discover and Share Music</title>
+          <title>Resona | Discover and Share Music</title>
           <meta
             name="description"
-            content="A Pinterest-style music discovery and sharing platform"
+            content="A modern music discovery and sharing platform"
           />
         </Helmet>
 
@@ -70,13 +71,6 @@ const Home = ({
         />
 
         <LandingPage />
-
-        {/* Auth Modal */}
-        <AuthModal
-          isOpen={isAuthModalOpen}
-          onClose={() => setIsAuthModalOpen(false)}
-          defaultTab="login"
-        />
       </div>
     );
   }
@@ -85,10 +79,10 @@ const Home = ({
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>MusicPin | Discover and Share Music</title>
+        <title>Resona | Discover and Share Music</title>
         <meta
           name="description"
-          content="A Pinterest-style music discovery and sharing platform"
+          content="A modern music discovery and sharing platform"
         />
       </Helmet>
 
@@ -112,13 +106,6 @@ const Home = ({
         currentTrack={currentTrack}
         isPlaying={isPlaying}
         onPlayPause={handlePlayPause}
-      />
-
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        defaultTab="login"
       />
     </div>
   );

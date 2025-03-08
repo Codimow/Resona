@@ -1,6 +1,15 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { Search, Menu, X, Music, Bell, User, LogIn } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Search,
+  Menu,
+  X,
+  Music,
+  Bell,
+  User,
+  LogIn,
+  LogOut,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { useAuth } from "@/lib/auth";
 
 interface NavbarProps {
   isLoggedIn?: boolean;
@@ -22,15 +31,16 @@ interface NavbarProps {
 
 const Navbar = ({
   isLoggedIn = false,
-  username = "MusicLover",
+  username = "User",
   avatarUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed=music",
   onSearch = () => {},
   onLoginClick = () => {},
   onSignupClick = () => {},
 }: NavbarProps) => {
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,13 +51,18 @@ const Navbar = ({
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/");
+  };
+
   return (
     <nav className="w-full h-[70px] bg-background border-b border-border/30 fixed top-0 left-0 z-50 px-4 md:px-6 lg:px-8">
       <div className="h-full max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
           <Music className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold hidden sm:block">MusicPin</span>
+          <span className="text-xl font-bold hidden sm:block">Resona</span>
         </Link>
 
         {/* Search Bar - Desktop */}
@@ -110,8 +125,8 @@ const Navbar = ({
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/boards" className="w-full">
-                      My Boards
+                    <Link to="/collections" className="w-full">
+                      My Collections
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
@@ -120,7 +135,10 @@ const Navbar = ({
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <button className="w-full text-left text-red-500">
+                    <button
+                      className="w-full text-left text-red-500"
+                      onClick={handleLogout}
+                    >
                       Logout
                     </button>
                   </DropdownMenuItem>
@@ -128,28 +146,13 @@ const Navbar = ({
               </DropdownMenu>
             </>
           ) : (
-            <Dialog open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                  <LogIn className="h-4 w-4 mr-2" />
-                  Login
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <div className="text-center">
-                  <h2 className="text-2xl font-bold mb-4">Login placeholder</h2>
-                  <p className="text-gray-500 mb-4">
-                    This would open the AuthModal component
-                  </p>
-                  <Button
-                    onClick={() => setIsAuthModalOpen(false)}
-                    className="w-full bg-primary hover:bg-primary/90"
-                  >
-                    Close
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              onClick={onLoginClick}
+            >
+              <LogIn className="h-4 w-4 mr-2" />
+              Login
+            </Button>
           )}
         </div>
 
@@ -208,11 +211,11 @@ const Navbar = ({
                       Profile
                     </Link>
                     <Link
-                      to="/boards"
+                      to="/collections"
                       className="text-foreground hover:text-primary font-medium py-2"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      My Boards
+                      My Collections
                     </Link>
                     <Link
                       to="/settings"
@@ -221,8 +224,11 @@ const Navbar = ({
                     >
                       Settings
                     </Link>
-                    <button className="text-left text-red-500 font-medium py-2">
-                      Logout
+                    <button
+                      className="text-left text-red-500 font-medium py-2 flex items-center"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="h-4 w-4 mr-2" /> Logout
                     </button>
                   </>
                 ) : (
@@ -230,7 +236,7 @@ const Navbar = ({
                     className="bg-primary hover:bg-primary/90 text-primary-foreground w-full mt-2"
                     onClick={() => {
                       setIsMobileMenuOpen(false);
-                      setIsAuthModalOpen(true);
+                      onLoginClick();
                     }}
                   >
                     <LogIn className="h-4 w-4 mr-2" />
