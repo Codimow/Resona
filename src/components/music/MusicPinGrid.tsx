@@ -3,6 +3,7 @@ import MusicPin from "./MusicPin";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Filter, Music, Flame, Clock, Plus } from "lucide-react";
+import CreateMusicPinDialog from "./CreateMusicPinDialog";
 
 interface MusicPinData {
   id: string;
@@ -23,134 +24,15 @@ interface MusicPinGridProps {
 }
 
 const MusicPinGrid = ({
-  pins = [
-    {
-      id: "pin-1",
-      title: "Blinding Lights",
-      artist: "The Weeknd",
-      albumArt:
-        "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300&q=80",
-      duration: "3:20",
-      likes: 1254,
-      isLiked: false,
-      streamingServices: [
-        { name: "Spotify", url: "#" },
-        { name: "Apple Music", url: "#" },
-      ],
-      genre: "Pop",
-    },
-    {
-      id: "pin-2",
-      title: "Levitating",
-      artist: "Dua Lipa",
-      albumArt:
-        "https://images.unsplash.com/photo-1619983081563-430f63602796?w=300&q=80",
-      duration: "3:23",
-      likes: 982,
-      isLiked: true,
-      streamingServices: [
-        { name: "Spotify", url: "#" },
-        { name: "Apple Music", url: "#" },
-      ],
-      genre: "Pop",
-    },
-    {
-      id: "pin-3",
-      title: "Save Your Tears",
-      artist: "The Weeknd & Ariana Grande",
-      albumArt:
-        "https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?w=300&q=80",
-      duration: "3:08",
-      likes: 1547,
-      isLiked: false,
-      streamingServices: [
-        { name: "Spotify", url: "#" },
-        { name: "Apple Music", url: "#" },
-      ],
-      genre: "Pop",
-    },
-    {
-      id: "pin-4",
-      title: "Good 4 U",
-      artist: "Olivia Rodrigo",
-      albumArt:
-        "https://images.unsplash.com/photo-1618609377864-68609b857e90?w=300&q=80",
-      duration: "2:58",
-      likes: 2103,
-      isLiked: false,
-      streamingServices: [
-        { name: "Spotify", url: "#" },
-        { name: "Apple Music", url: "#" },
-      ],
-      genre: "Pop Rock",
-    },
-    {
-      id: "pin-5",
-      title: "Stay",
-      artist: "The Kid LAROI & Justin Bieber",
-      albumArt:
-        "https://images.unsplash.com/photo-1619983081593-e2ba5b543168?w=300&q=80",
-      duration: "2:21",
-      likes: 1876,
-      isLiked: true,
-      streamingServices: [
-        { name: "Spotify", url: "#" },
-        { name: "Apple Music", url: "#" },
-      ],
-      genre: "Pop",
-    },
-    {
-      id: "pin-6",
-      title: "Montero (Call Me By Your Name)",
-      artist: "Lil Nas X",
-      albumArt:
-        "https://images.unsplash.com/photo-1619983081563-430f63602796?w=300&q=80",
-      duration: "2:17",
-      likes: 1654,
-      isLiked: false,
-      streamingServices: [
-        { name: "Spotify", url: "#" },
-        { name: "Apple Music", url: "#" },
-      ],
-      genre: "Hip Hop",
-    },
-    {
-      id: "pin-7",
-      title: "Kiss Me More",
-      artist: "Doja Cat ft. SZA",
-      albumArt:
-        "https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?w=300&q=80",
-      duration: "3:28",
-      likes: 1432,
-      isLiked: false,
-      streamingServices: [
-        { name: "Spotify", url: "#" },
-        { name: "Apple Music", url: "#" },
-      ],
-      genre: "R&B",
-    },
-    {
-      id: "pin-8",
-      title: "Peaches",
-      artist: "Justin Bieber ft. Daniel Caesar, Giveon",
-      albumArt:
-        "https://images.unsplash.com/photo-1618609377864-68609b857e90?w=300&q=80",
-      duration: "3:18",
-      likes: 1987,
-      isLiked: true,
-      streamingServices: [
-        { name: "Spotify", url: "#" },
-        { name: "Apple Music", url: "#" },
-      ],
-      genre: "R&B",
-    },
-  ],
+  pins = [],
   isLoading = false,
   onFilterChange = () => {},
 }: MusicPinGridProps) => {
   const [activeFilter, setActiveFilter] = useState("discover");
   const [columns, setColumns] = useState(4);
   const [filteredPins, setFilteredPins] = useState<MusicPinData[]>(pins);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [userPins, setUserPins] = useState<MusicPinData[]>([]);
 
   // Handle responsive columns based on window width
   useEffect(() => {
@@ -172,7 +54,7 @@ const MusicPinGrid = ({
   useEffect(() => {
     // In a real app, this would likely be an API call with filter parameters
     // For now, we'll just simulate filtering
-    let filtered = [...pins];
+    let filtered = [...pins, ...userPins];
 
     if (activeFilter === "trending") {
       filtered = filtered.sort((a, b) => b.likes - a.likes);
@@ -183,7 +65,7 @@ const MusicPinGrid = ({
 
     setFilteredPins(filtered);
     if (onFilterChange) onFilterChange(activeFilter);
-  }, [activeFilter, pins, onFilterChange]);
+  }, [activeFilter, pins, userPins, onFilterChange]);
 
   // Create column arrays for masonry layout
   const getColumnPins = () => {
@@ -249,6 +131,7 @@ const MusicPinGrid = ({
               variant="default"
               size="sm"
               className="flex items-center gap-1"
+              onClick={() => setIsCreateDialogOpen(true)}
             >
               <Plus className="h-4 w-4" />
               <span>Add Pin</span>
@@ -278,6 +161,8 @@ const MusicPinGrid = ({
                     isLiked={pin.isLiked}
                     streamingServices={pin.streamingServices}
                     genre={pin.genre}
+                    snippetStart={pin.snippetStart}
+                    snippetEnd={pin.snippetEnd}
                   />
                 </div>
               ))}
@@ -290,6 +175,28 @@ const MusicPinGrid = ({
             <p>No music pins found. Try a different filter or add some pins!</p>
           </div>
         )}
+
+        {/* Create Music Pin Dialog */}
+        <CreateMusicPinDialog
+          open={isCreateDialogOpen}
+          onOpenChange={setIsCreateDialogOpen}
+          onCreatePin={(newPin) => {
+            const pin: MusicPinData = {
+              id: `user-pin-${Date.now()}`,
+              title: newPin.title,
+              artist: newPin.artist,
+              albumArt: newPin.albumArt,
+              duration: newPin.duration || "3:30", // Use provided duration or default
+              likes: 0,
+              isLiked: false,
+              streamingServices: [{ name: "Custom", url: newPin.audioUrl }],
+              genre: newPin.genre || "Unknown",
+              snippetStart: newPin.snippetStart,
+              snippetEnd: newPin.snippetEnd,
+            };
+            setUserPins([pin, ...userPins]);
+          }}
+        />
       </div>
     </div>
   );
